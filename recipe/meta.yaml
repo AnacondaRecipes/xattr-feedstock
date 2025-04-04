@@ -21,6 +21,7 @@ build:
 
 requirements:
   build:
+    - patch
     - {{ compiler('c') }}
   host:
     - python

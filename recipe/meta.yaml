@@ -1,43 +1,50 @@
 {% set name = "xattr" %}
-{% set version = "0.10.1" %}
-{% set bundle = "tar.gz" %}
-{% set hash = "c12e7d81ffaa0605b3ac8c22c2994a8e18a9cf1c59287a1b7722a2289c952ec5" %}
+{% set version = "1.1.4" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.{{ bundle }}
-  sha256: {{ hash }}
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: b7b02ecb2270da5b7e7deaeea8f8b528c17368401c2b9d5f63e91f545b45d372
+  patches:
+    - patches/0001-fix-tests-on-osx.patch
 
 build:
-  skip: true  # [win]
+  number: 0
   entry_points:
     - xattr = xattr.tool:main
-  number: 0
-  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: True  # [py<38]
+  skip: True  # [win]
 
 requirements:
   build:
+    - patch
     - {{ compiler('c') }}
   host:
     - python
     - pip
-    - cffi 1.15.1
-    - setuptools
+    - cffi >=1.16.0
+    - setuptools >=68
     - wheel
   run:
     - python
-    - cffi >=1.0.0
+    - cffi >=1.16.0
+
 test:
-  requires:
-    - pip
+  source_files:
+    - tests
   imports:
     - xattr
   commands:
-    - xattr --help
     - pip check
+    - xattr --help
+    - pytest -v tests
+  requires:
+    - pip
+    - pytest
 
 about:
   home: https://github.com/xattr/xattr

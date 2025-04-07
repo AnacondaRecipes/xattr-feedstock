@@ -1,0 +1,42 @@
+From c0a5e8218b928050e54bbb7710468ce6c96701e2 Mon Sep 17 00:00:00 2001
+From: Andrii Osipov <aosipov@anaconda.com>
+Date: Thu, 3 Apr 2025 22:44:14 -0700
+Subject: [PATCH] fix tests on osx
+
+---
+ tests/test_xattr.py | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/tests/test_xattr.py b/tests/test_xattr.py
+index 86658f8..1317956 100644
+--- a/tests/test_xattr.py
++++ b/tests/test_xattr.py
+@@ -39,6 +39,10 @@ class BaseTestXattr(object):
+         if sys.platform.startswith('linux') and 'security.selinux' in x:
+             d['security.selinux'] = x['security.selinux']
+ 
++        # macOS systems may have provenance attribute
++        if sys.platform == 'darwin' and 'com.apple.provenance' in x:
++            d['com.apple.provenance'] = x['com.apple.provenance']
++
+         self.assertEqual(list(x.keys()), list(d.keys()))
+         self.assertEqual(list(x.list()), list(d.keys()))
+         self.assertEqual(dict(x), d)
+@@ -94,7 +98,13 @@ class BaseTestXattr(object):
+                 # Solaris, Linux don't support extended attributes on symlinks
+                 raise unittest.SkipTest("XATTRs on symlink not allowed"
+                                         " on filesystem/platform")
+-            self.assertEqual(dict(realfile), {})
++            expected_attributes = {}
++            # On macOS, account for system-specific attributes
++            if sys.platform == 'darwin':
++                for key in realfile.keys():
++                    if key.startswith('com.apple.'):
++                        expected_attributes[key] = realfile[key]
++            self.assertEqual(dict(realfile), expected_attributes)
+             self.assertEqual(symlink['user.islink'], b'true')
+         finally:
+             os.remove(symlinkPath)
+-- 
+2.39.3 (Apple Git-146)
+

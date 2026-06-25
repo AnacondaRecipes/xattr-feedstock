@@ -8,25 +8,24 @@ package:
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: 30439fabd7de0787b27e9a6e1d569c5959854cb322f64ce7380fedbfa5035036
-  patches:
-    - patches/0001-fix-tests-on-osx.patch
 
 build:
   number: 0
   entry_points:
     - xattr = xattr.tool:main
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  skip: true  # [py<38]
+  skip: true  # [py<39]
   skip: true  # [win]
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('c') }}
   host:
     - python
     - pip
     - cffi >=1.16.0
-    - setuptools >=68
+    - setuptools >=77.0.3
     - wheel
   run:
     - python
